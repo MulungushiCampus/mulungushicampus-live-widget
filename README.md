@@ -7,6 +7,19 @@ class MulungushiLiveClass extends HTMLElement {
     this.isLive = this.getAttribute("live") === "true";
     this.jitsiApi = null;
     this.render();
+
+    // Safety net: some hosts (like Wix) don't always reliably trigger
+    // attributeChangedCallback, so also poll the attribute directly.
+    this._pollInterval = setInterval(() => {
+      const current = this.getAttribute("live") === "true";
+      if (current !== this.isLive) {
+        this.setLiveStatus(current);
+      }
+    }, 3000);
+  }
+
+  disconnectedCallback() {
+    if (this._pollInterval) clearInterval(this._pollInterval);
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
